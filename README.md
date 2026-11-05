@@ -37,6 +37,13 @@ Asignatura impartida por el **Departamento de Ingeniería Eléctrica, Electróni
 
 \---
 
+## Funcionalidades
+
+- Movimiento por teclado de las raquetas
+- Moviemiento de la esfera
+- Finalización de la partida cuando alguno de los jugadores alcanza los 3 puntos
+- Aviso en la consola cada vez que un jugador anota un punto y del final de la partida (mediante logger y "FIFO")
+
 ## 🤝 Contribuciones
 
 Este repositorio tiene finalidad exclusivamente docente.
