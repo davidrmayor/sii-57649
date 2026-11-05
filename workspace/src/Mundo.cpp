@@ -4,11 +4,15 @@
 #include <fstream>
 #include "Mundo.h"
 #include "glut.h"
-
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -21,7 +25,7 @@ CMundo::CMundo()
 
 CMundo::~CMundo()
 {
-
+	close(fd);
 }
 
 void CMundo::InitGL()
@@ -115,9 +119,13 @@ void CMundo::OnDraw()
 
 void CMundo::OnTimer(int value)
 {	
+	if(dat->accion == 1) OnKeyboardDown('o', 0, 0);
+	if(dat->accion == -1) OnKeyboardDown('l', 0, 0);
 	jugador1.Mueve(0.025f);
 	jugador2.Mueve(0.025f);
 	esfera.Mueve(0.025f);
+	dat->esfera = esfera;
+	dat->raqueta1 = jugador2;
 	int i;
 	for(i=0;i<paredes.size();i++)
 	{
@@ -130,20 +138,42 @@ void CMundo::OnTimer(int value)
 	jugador2.Rebota(esfera);
 	if(fondo_izq.Rebota(esfera))
 	{
-		esfera.centro.x=0;
-		esfera.centro.y=rand()/(float)RAND_MAX;
-		esfera.velocidad.x=2+2*rand()/(float)RAND_MAX;
-		esfera.velocidad.y=2+2*rand()/(float)RAND_MAX;
+		// ... tu código existente ...
 		puntos2++;
+		sprintf(buffer, "Jugador 2 marca 1 punto, lleva un total de %d puntos.", puntos2);
+		write(fd, buffer, strlen(buffer)+1);
+
+		if (puntos2 >= 3) {
+			sprintf(buffer, "Jugador 2 gana la partida. Fin del juego.");
+			write(fd, buffer, strlen(buffer)+1);
+			close(fd);
+			fd = -1;
+			exit(0);
+		}
+		
+		esfera.centro.x = 0.0f;
+		esfera.centro.y = 0.0f;
 	}
 
 	if(fondo_dcho.Rebota(esfera))
 	{
-		esfera.centro.x=0;
-		esfera.centro.y=rand()/(float)RAND_MAX;
-		esfera.velocidad.x=-2-2*rand()/(float)RAND_MAX;
-		esfera.velocidad.y=-2-2*rand()/(float)RAND_MAX;
+		// ... tu código existente ...
+		std::cout << "marca puntos el 1 " << std::endl;
 		puntos1++;
+		sprintf(buffer, "Jugador 1 marca 1 punto, lleva un total de %d puntos.", puntos1);
+		write(fd, buffer, strlen(buffer)+1);
+
+                std::cout << "marca puntos el 1 fin" << std::endl;
+		if (puntos1 >= 3) {
+			sprintf(buffer, "Jugador 1 gana la partida. Fin del juego.");
+			write(fd, buffer, strlen(buffer)+1);
+			close(fd);
+			fd = -1;
+			exit(0);
+		}
+		
+		esfera.centro.x = 0.0f;
+		esfera.centro.y = 0.0f;
 	}
 
 }
@@ -192,4 +222,20 @@ void CMundo::Init()
 	jugador2.g=0;
 	jugador2.x1=6;jugador2.y1=-1;
 	jugador2.x2=6;jugador2.y2=1;
+	
+//FIFO
+	if ((fd=open("FIFO", O_WRONLY))<0) {
+		perror("No puede abrirse el FIFO");
+		exit(1);
+	}
+	
+//BOT
+	fd_bot = open("DatosMemCompartida.dat", O_RDWR | O_CREAT | O_TRUNC, 0666);
+	ftruncate(fd_bot, sizeof(DatosMemCompartida));
+	char *direccion;
+	direccion=(char *)mmap(NULL, sizeof(DatosMemCompartida*), PROT_READ | PROT_WRITE, MAP_SHARED, fd_bot, 0);
+	close(fd_bot);
+	dat=(DatosMemCompartida*)direccion;
+	dat->esfera = esfera;
+	dat->raqueta1 = jugador2;
 }

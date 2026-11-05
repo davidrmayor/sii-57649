@@ -1,6 +1,7 @@
 // Mundo.h: interface for the CMundo class.
 //
 //////////////////////////////////////////////////////////////////////
+#pragma once
 
 #if !defined(AFX_MUNDO_H__9510340A_3D75_485F_93DC_302A43B8039A__INCLUDED_)
 #define AFX_MUNDO_H__9510340A_3D75_485F_93DC_302A43B8039A__INCLUDED_
@@ -14,6 +15,11 @@
 
 #include "Esfera.h"
 #include "Raqueta.h"
+#include "DatosMemCompartida.h"
+
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 class CMundo  
 {
@@ -36,6 +42,12 @@ public:
 
 	int puntos1;
 	int puntos2;
+	
+	int fd , fd_bot;
+	
+	DatosMemCompartida * dat;
+	
+	char buffer[1024];
 };
 
 #endif // !defined(AFX_MUNDO_H__9510340A_3D75_485F_93DC_302A43B8039A__INCLUDED_)
